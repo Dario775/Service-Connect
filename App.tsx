@@ -64,12 +64,23 @@ const App: React.FC = () => {
     );
   }, [currentUser]);
   
-  const handleProfessionalMarkComplete = useCallback((postId: number) => {
-    setJobPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.AWAITING_CLIENT_VALIDATION, progress: 100 } : p));
+  const handleProfessionalCompletion = useCallback((postId: number, rating: number, feedback: string) => {
+    setJobPosts(prev => prev.map(p => p.id === postId ? { 
+        ...p, 
+        status: JobStatus.AWAITING_CLIENT_VALIDATION, 
+        progress: 100,
+        clientRating: rating,
+        clientFeedback: feedback,
+    } : p));
   }, []);
 
-  const handleClientValidation = useCallback((postId: number) => {
-      setJobPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.AWAITING_ADMIN_FINALIZATION } : p));
+  const handleClientCompletion = useCallback((postId: number, rating: number, feedback: string) => {
+      setJobPosts(prev => prev.map(p => p.id === postId ? { 
+          ...p, 
+          status: JobStatus.AWAITING_ADMIN_FINALIZATION,
+          professionalRating: rating,
+          professionalFeedback: feedback,
+      } : p));
   }, []);
 
   const handleAdminFinalization = useCallback((postId: number) => {
@@ -93,7 +104,7 @@ const App: React.FC = () => {
                   currentUser={currentUser} 
                   posts={jobPosts} 
                   addJobPost={addJobPost}
-                  onValidate={handleClientValidation}
+                  onClientComplete={handleClientCompletion}
                 />;
       case Role.PROFESSIONAL:
         return <ProfessionalDashboard 
@@ -101,7 +112,7 @@ const App: React.FC = () => {
                   posts={jobPosts} 
                   onTakeJob={takeJob} 
                   onUpdateProgress={updateJobProgress} 
-                  onMarkComplete={handleProfessionalMarkComplete}
+                  onProfessionalComplete={handleProfessionalCompletion}
                 />;
       default:
         return <p>No hay un panel disponible para este rol.</p>;
@@ -113,10 +124,15 @@ const App: React.FC = () => {
       return <LoginScreen onLogin={handleLogin} onBackToHome={navigateToHome} />;
     }
     const activeJobs = jobPosts.filter(p => p.status === JobStatus.ACTIVE);
+    const completedJobs = jobPosts.filter(p => p.status === JobStatus.COMPLETED && p.professionalRating && p.professionalFeedback);
     return (
        <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
           <Navbar currentUser={null} onLogout={handleLogout} onNavigateToLogin={navigateToLogin} />
-          <HomeScreen activeJobs={activeJobs} onNavigateToLogin={navigateToLogin} />
+          <HomeScreen 
+            activeJobs={activeJobs}
+            completedJobs={completedJobs}
+            onNavigateToLogin={navigateToLogin}
+          />
        </div>
     );
   }

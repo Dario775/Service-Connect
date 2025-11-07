@@ -42,4 +42,9 @@ export interface JobPost {
   professionalId?: number;
   createdAt: Date;
   progress?: number;
+  professionalRating?: number;
+  professionalFeedback?: string;
+  clientRating?: number;
+  clientFeedback?: string;
+  photo?: string;
 }

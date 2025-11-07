@@ -1,5 +1,7 @@
 {
-  "name": "Copy of Service Connect",
+  "name": "Copy of Copy of Service Connect",
   "description": "Una aplicación estilo red social donde los usuarios pueden publicar necesidades de servicios como soporte técnico, plomería o refrigeración. Los profesionales pueden buscar y aceptar estos trabajos. Todas las publicaciones son moderadas por un administrador a través de un panel dedicado.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

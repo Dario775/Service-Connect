@@ -2,13 +2,15 @@ import React from 'react';
 import { JobPost } from '../../types';
 import JobPostCard from '../jobs/JobPostCard';
 import { PencilAltIcon, UsersIcon, CheckCircleIcon } from '../icons/IconComponents';
+import Footer from '../layout/Footer';
 
 interface HomeScreenProps {
   activeJobs: JobPost[];
+  completedJobs: JobPost[];
   onNavigateToLogin: () => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, onNavigateToLogin }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, onNavigateToLogin }) => {
 
   const handleScrollToJobs = () => {
     document.getElementById('available-jobs')?.scrollIntoView({ behavior: 'smooth' });
@@ -103,12 +105,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, onNavigateToLogin }
         </div>
       </section>
 
-       {/* Footer */}
-        <footer className="bg-slate-200 dark:bg-slate-900">
-            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                <p>&copy; {new Date().getFullYear()} Service Connect. Todos los derechos reservados.</p>
-            </div>
-        </footer>
+      <Footer completedJobs={completedJobs} />
     </div>
   );
 };
