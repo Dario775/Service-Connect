@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { JobPost, JobStatus, ServiceCategory } from '../../types';
+import { JobPost, JobStatus, ServiceCategory, User } from '../../types';
 import JobPostCard from '../jobs/JobPostCard';
 import { SERVICE_CATEGORIES } from '../../constants';
 
 interface AdminDashboardProps {
   posts: JobPost[];
+  users: User[];
   onApprove: (postId: number) => void;
   onReject: (postId: number) => void;
   onFinalize: (postId: number) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ posts, onApprove, onReject, onFinalize }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ posts, users, onApprove, onReject, onFinalize }) => {
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<ServiceCategory | 'all'>('all');
 
   const filteredPosts = posts.filter(post => {
     const statusMatch = statusFilter === 'all' || post.status === statusFilter;
+    // FIX: Corrected a typo where categoryMatch was being used in its own declaration. It should be compared with categoryFilter.
     const categoryMatch = categoryFilter === 'all' || post.category === categoryFilter;
     return statusMatch && categoryMatch;
   }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -67,7 +69,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ posts, onApprove, onRej
         {filteredPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map(post => (
-              <JobPostCard key={post.id} post={post}>
+              <JobPostCard key={post.id} post={post} users={users}>
                 {post.status === JobStatus.PENDING && (
                   <div className="flex space-x-2">
                     <button

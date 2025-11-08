@@ -1,10 +1,10 @@
 import React from 'react';
-import { JobPost } from '../../types';
-import { USERS } from '../../constants';
-import { StarIcon } from '../icons/IconComponents';
+import { JobPost, User } from '../../types';
+import { StarIcon, UserCircleIcon } from '../icons/IconComponents';
 
 interface TestimonialCardProps {
   post: JobPost;
+  users: User[];
 }
 
 const RatingDisplay: React.FC<{ rating: number }> = ({ rating }) => (
@@ -15,15 +15,23 @@ const RatingDisplay: React.FC<{ rating: number }> = ({ rating }) => (
     </div>
 );
 
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ post }) => {
-  const client = USERS.find(u => u.id === post.clientId);
-  const professional = USERS.find(u => u.id === post.professionalId);
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ post, users }) => {
+  const client = users.find(u => u.id === post.clientId);
+  const professional = users.find(u => u.id === post.professionalId);
+
+  const UserAvatar: React.FC<{ user?: User }> = ({ user }) => {
+    if (user?.photo) {
+      return <img src={user.photo} alt={user.name} className="w-16 h-16 rounded-full object-cover mx-auto mb-4 shadow-md" />;
+    }
+    return <UserCircleIcon className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />;
+  };
 
   return (
     <div className="text-center max-w-4xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
         {/* Client's Feedback */}
         <div className="flex flex-col">
+          <UserAvatar user={client} />
           <h4 className="font-bold text-sm uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Opinión del Cliente</h4>
           <div className="flex-grow">
             <RatingDisplay rating={post.professionalRating || 0} />
@@ -38,6 +46,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ post }) => {
 
         {/* Professional's Feedback */}
         <div className="flex flex-col">
+          <UserAvatar user={professional} />
           <h4 className="font-bold text-sm uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Opinión del Profesional</h4>
           <div className="flex-grow">
             <RatingDisplay rating={post.clientRating || 0} />

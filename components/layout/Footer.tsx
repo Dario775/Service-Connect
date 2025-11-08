@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { JobPost } from '../../types';
+import { JobPost, User } from '../../types';
 import TestimonialCard from '../home/TestimonialCard';
 
 interface FooterProps {
   completedJobs: JobPost[];
+  users: User[];
 }
 
-const Footer: React.FC<FooterProps> = ({ completedJobs }) => {
+const Footer: React.FC<FooterProps> = ({ completedJobs, users }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
 
@@ -33,7 +34,7 @@ const Footer: React.FC<FooterProps> = ({ completedJobs }) => {
           <div className="mb-8 min-h-[220px] flex items-center justify-center">
             <div className={`transition-opacity duration-500 ease-in-out w-full ${isFading ? 'opacity-0' : 'opacity-100'}`}>
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Historias de Éxito</h3>
-              <TestimonialCard post={currentJob} />
+              <TestimonialCard post={currentJob} users={users} />
             </div>
           </div>
         )}

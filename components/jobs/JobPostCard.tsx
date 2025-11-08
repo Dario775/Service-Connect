@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { JobPost, JobStatus, User } from '../../types';
-import { USERS } from '../../constants';
-import { StarIcon } from '../icons/IconComponents';
+import { StarIcon, LocationMarkerIcon } from '../icons/IconComponents';
 import PhotoViewerModal from './PhotoViewerModal';
 
 interface JobPostCardProps {
   post: JobPost;
+  users: User[];
   children?: React.ReactNode;
   hideProgressBar?: boolean;
+  distance?: number;
 }
 
 const getStatusColor = (status: JobStatus) => {
@@ -19,6 +20,7 @@ const getStatusColor = (status: JobStatus) => {
     case JobStatus.AWAITING_ADMIN_FINALIZATION: return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200';
     case JobStatus.COMPLETED: return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200';
     case JobStatus.REJECTED: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    case JobStatus.CANCELLED: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
   }
 };
@@ -31,9 +33,9 @@ const RatingDisplay: React.FC<{ rating: number }> = ({ rating }) => (
     </div>
 );
 
-const JobPostCard: React.FC<JobPostCardProps> = ({ post, children, hideProgressBar = false }) => {
-  const client = USERS.find(u => u.id === post.clientId);
-  const professional = USERS.find(u => u.id === post.professionalId);
+const JobPostCard: React.FC<JobPostCardProps> = ({ post, users, children, hideProgressBar = false, distance }) => {
+  const client = users.find(u => u.id === post.clientId);
+  const professional = users.find(u => u.id === post.professionalId);
   const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
 
   return (
@@ -66,6 +68,14 @@ const JobPostCard: React.FC<JobPostCardProps> = ({ post, children, hideProgressB
             </span>
           </div>
           <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mt-1">{post.category}</p>
+          
+           {distance !== undefined && (
+            <div className="flex items-center text-sm text-slate-500 dark:text-slate-400 mt-2">
+              <LocationMarkerIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
+              <span>Aprox. {distance.toFixed(1)} km de distancia</span>
+            </div>
+          )}
+
           <p className="text-slate-600 dark:text-slate-300 mt-4 text-sm">{post.description}</p>
           
           {post.status === JobStatus.AWAITING_CLIENT_VALIDATION && (

@@ -1,6 +1,6 @@
-
 import React from 'react';
-import { USERS } from '../../constants';
+// FIX: Corrected import from 'USERS' to 'INITIAL_USERS' to match the exported member from constants.ts.
+import { INITIAL_USERS } from '../../constants';
 import { User, Role } from '../../types';
 import { BriefcaseIcon, UserCircleIcon, ShieldCheckIcon } from '../icons/IconComponents';
 
@@ -29,7 +29,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onBackToHome }) => {
       <div className="w-full max-w-md bg-white dark:bg-slate-800 p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-white mb-6">Selecciona tu Perfil</h2>
         <div className="space-y-4">
-          {USERS.map((user) => (
+          {INITIAL_USERS.map((user) => (
             <button
               key={user.id}
               onClick={() => onLogin(user)}

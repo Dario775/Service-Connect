@@ -11,7 +11,8 @@ export enum JobStatus {
   AWAITING_CLIENT_VALIDATION = 'Esperando Validación del Cliente',
   AWAITING_ADMIN_FINALIZATION = 'Esperando Finalización del Admin',
   COMPLETED = 'Completado',
-  REJECTED = 'Rechazado'
+  REJECTED = 'Rechazado',
+  CANCELLED = 'Cancelado'
 }
 
 export enum ServiceCategory {
@@ -30,6 +31,10 @@ export interface User {
   role: Role;
   phone?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
+  photo?: string;
+  specialties?: ServiceCategory[];
 }
 
 export interface JobPost {
@@ -47,4 +52,6 @@ export interface JobPost {
   clientRating?: number;
   clientFeedback?: string;
   photo?: string;
+  latitude?: number;
+  longitude?: number;
 }

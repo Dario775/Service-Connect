@@ -1,5 +1,5 @@
 import React from 'react';
-import { JobPost } from '../../types';
+import { JobPost, User } from '../../types';
 import JobPostCard from '../jobs/JobPostCard';
 import { PencilAltIcon, UsersIcon, CheckCircleIcon } from '../icons/IconComponents';
 import Footer from '../layout/Footer';
@@ -7,10 +7,11 @@ import Footer from '../layout/Footer';
 interface HomeScreenProps {
   activeJobs: JobPost[];
   completedJobs: JobPost[];
+  users: User[];
   onNavigateToLogin: () => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, onNavigateToLogin }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, users, onNavigateToLogin }) => {
 
   const handleScrollToJobs = () => {
     document.getElementById('available-jobs')?.scrollIntoView({ behavior: 'smooth' });
@@ -94,7 +95,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, onNa
           {activeJobs.length > 0 ? (
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {activeJobs.map(job => (
-                <JobPostCard key={job.id} post={job} />
+                <JobPostCard key={job.id} post={job} users={users} />
               ))}
             </div>
           ) : (
@@ -105,7 +106,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, onNa
         </div>
       </section>
 
-      <Footer completedJobs={completedJobs} />
+      <Footer completedJobs={completedJobs} users={users} />
     </div>
   );
 };

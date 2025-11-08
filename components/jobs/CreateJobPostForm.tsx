@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { JobPost, ServiceCategory } from '../../types';
 import { SERVICE_CATEGORIES } from '../../constants';
 import { generateJobDescription } from '../../services/geminiService';
-import { SparklesIcon, CameraIcon, PhotographIcon, XIcon } from '../icons/IconComponents';
+import { SparklesIcon, CameraIcon, PhotographIcon, XIcon, LocationMarkerIcon } from '../icons/IconComponents';
 import CameraModal from './CameraModal';
 
 interface CreateJobPostFormProps {
@@ -17,6 +17,8 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
   const [isGenerating, setIsGenerating] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleGenerateDescription = async () => {
@@ -46,11 +48,32 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
     setIsCameraOpen(false);
   };
   
+  const handleAttachLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('La geolocalización no es compatible con tu navegador.');
+      return;
+    }
+    setLocationStatus('Obteniendo ubicación...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ lat: latitude, lon: longitude });
+        setLocationStatus(`Ubicación añadida correctamente.`);
+      },
+      () => {
+        setLocationStatus('No se pudo obtener la ubicación. Comprueba los permisos.');
+      },
+      { timeout: 10000 }
+    );
+  };
+
   const resetForm = () => {
     setTitle('');
     setDescription('');
     setCategory(ServiceCategory.OTHER);
     setPhoto(null);
+    setLocation(null);
+    setLocationStatus('');
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -64,7 +87,9 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
       description,
       category,
       clientId,
-      photo: photo || undefined
+      photo: photo || undefined,
+      latitude: location?.lat,
+      longitude: location?.lon
     });
     resetForm();
   };
@@ -117,6 +142,22 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
               className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-800 dark:text-slate-200"
               placeholder="Describe el problema en detalle..."
             />
+          </div>
+          
+          {/* Location Section */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Ubicación del Trabajo (Opcional)</label>
+            <div className="mt-2 flex items-center gap-4">
+              <button
+                type="button"
+                onClick={handleAttachLocation}
+                className="flex items-center justify-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md shadow-sm text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600"
+              >
+                <LocationMarkerIcon className="h-5 w-5 mr-2" />
+                Usar mi Ubicación Actual
+              </button>
+              {locationStatus && <p className={`text-sm ${location ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>{locationStatus}</p>}
+            </div>
           </div>
           
           {/* Photo Upload Section */}
