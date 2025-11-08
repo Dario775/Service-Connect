@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 interface JobProgressUpdaterProps {
-  postId: number;
+  postId: string;
   currentProgress: number;
-  onUpdate: (postId: number, progress: number) => void;
+  onUpdate: (postId: string, progress: number) => void;
 }
 
 const JobProgressUpdater: React.FC<JobProgressUpdaterProps> = ({ postId, currentProgress, onUpdate }) => {

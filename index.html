@@ -12,7 +12,10 @@
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/"
   }
 }
 </script>
@@ -45,26 +48,9 @@
     background-size: cover;
     background-position: center;
     opacity: 0;
-    animation: fade 18s infinite, kenburns 18s infinite;
-  }
-  .slide1 {
-    background-image: url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop');
-    animation-delay: 0s, 0s;
-  }
-  .slide2 {
-    background-image: url('https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=2069&auto=format&fit=crop');
-    animation-delay: 6s, 6s;
-  }
-  .slide3 {
-    background-image: url('https://images.unsplash.com/photo-1545239351-ef35f43d514b?q=80&w=1974&auto=format&fit=crop');
-    animation-delay: 12s, 12s;
-  }
-  @keyframes fade {
-    0% { opacity: 0; }
-    11.11% { opacity: 1; }
-    33.33% { opacity: 1; }
-    44.44% { opacity: 0; }
-    100% { opacity: 0; }
+    animation-name: fade, kenburns;
+    animation-timing-function: ease-in-out, linear;
+    animation-iteration-count: infinite, infinite;
   }
   @keyframes kenburns {
     0% {

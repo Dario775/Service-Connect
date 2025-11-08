@@ -11,9 +11,9 @@ interface ProfessionalDashboardProps {
   currentUser: User;
   posts: JobPost[];
   users: User[];
-  onTakeJob: (postId: number) => void;
-  onUpdateProgress: (postId: number, progress: number) => void;
-  onProfessionalComplete: (postId: number, rating: number, feedback: string) => void;
+  onTakeJob: (postId: string) => void;
+  onUpdateProgress: (postId: string, progress: number) => void;
+  onProfessionalComplete: (postId: string, rating: number, feedback: string) => void;
   onUpdateUser: (user: User) => void;
 }
 

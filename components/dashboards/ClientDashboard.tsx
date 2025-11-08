@@ -10,9 +10,9 @@ interface ClientDashboardProps {
   posts: JobPost[];
   users: User[];
   addJobPost: (newPost: Omit<JobPost, 'id' | 'status' | 'createdAt'>) => void;
-  onClientComplete: (postId: number, rating: number, feedback: string) => void;
+  onClientComplete: (postId: string, rating: number, feedback: string) => void;
   onUpdateUser: (user: User) => void;
-  onCancelJob: (postId: number) => void;
+  onCancelJob: (postId: string) => void;
 }
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, users, addJobPost, onClientComplete, onUpdateUser, onCancelJob }) => {

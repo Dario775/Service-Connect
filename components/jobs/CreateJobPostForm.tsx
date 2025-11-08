@@ -6,7 +6,7 @@ import { SparklesIcon, CameraIcon, PhotographIcon, XIcon, LocationMarkerIcon } f
 import CameraModal from './CameraModal';
 
 interface CreateJobPostFormProps {
-  clientId: number;
+  clientId: string;
   onSubmit: (newPost: Omit<JobPost, 'id' | 'status' | 'createdAt'>) => void;
 }
 

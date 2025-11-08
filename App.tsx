@@ -1,12 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { User, Role, JobPost, JobStatus } from './types';
 import { INITIAL_USERS, INITIAL_JOB_POSTS } from './constants';
 import Navbar from './components/layout/Navbar';
-import LoginScreen from './components/auth/LoginScreen';
+import AuthScreen from './components/auth/AuthScreen';
 import AdminDashboard from './components/dashboards/AdminDashboard';
 import ClientDashboard from './components/dashboards/ClientDashboard';
 import ProfessionalDashboard from './components/dashboards/ProfessionalDashboard';
 import HomeScreen from './components/home/HomeScreen';
+import { auth } from './firebase/config';
+import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
+import { BriefcaseIcon } from './components/icons/IconComponents';
 
 type View = 'home' | 'login' | 'dashboard';
 
@@ -16,16 +19,44 @@ const App: React.FC = () => {
   const [jobPosts, setJobPosts] = useState<JobPost[]>(INITIAL_JOB_POSTS);
   const [view, setView] = useState<View>('home');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [heroImages, setHeroImages] = useState<string[]>([
+    'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=2069&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1545239351-ef35f43d514b?q=80&w=1974&auto=format&fit=crop'
+  ]);
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    setView('dashboard');
-  };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in.
+        const userProfile = users.find(u => u.id === firebaseUser.uid);
+        if (userProfile) {
+          setCurrentUser(userProfile);
+          setView('dashboard');
+        }
+        // If user profile doesn't exist, they will be created via the registration flow.
+        // This handles session persistence.
+      } else {
+        // User is signed out.
+        setCurrentUser(null);
+        setView('home');
+      }
+      setIsLoadingAuth(false);
+    });
+
+    return () => unsubscribe(); // Cleanup subscription on unmount
+  }, [users]);
+
 
   const handleLogout = () => {
-    setCurrentUser(null);
-    setSearchQuery('');
-    setView('home');
+    signOut(auth).then(() => {
+        setCurrentUser(null);
+        setSearchQuery('');
+        setView('home');
+    }).catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+    });
   };
   
   const navigateToLogin = () => {
@@ -36,29 +67,41 @@ const App: React.FC = () => {
     setView('home');
   }
 
+  const handleRegisterUser = (firebaseUser: FirebaseUser, name: string, role: Role) => {
+    const newUser: User = {
+      id: firebaseUser.uid,
+      name: name,
+      email: firebaseUser.email || '',
+      role: role,
+    };
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUser(newUser);
+    setView('dashboard');
+  };
+
   const addJobPost = useCallback((newPostData: Omit<JobPost, 'id' | 'status' | 'createdAt'>) => {
     const newPost: JobPost = {
       ...newPostData,
-      id: Math.max(...jobPosts.map(p => p.id), 0) + 1,
+      id: `job-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       status: JobStatus.PENDING,
       createdAt: new Date(),
     };
     setJobPosts(prevPosts => [newPost, ...prevPosts]);
-  }, [jobPosts]);
+  }, []);
 
-  const updateJobStatus = useCallback((postId: number, status: JobStatus) => {
+  const updateJobStatus = useCallback((postId: string, status: JobStatus) => {
     setJobPosts(prevPosts =>
       prevPosts.map(p => (p.id === postId ? { ...p, status } : p))
     );
   }, []);
 
-  const updateJobProgress = useCallback((postId: number, progress: number) => {
+  const updateJobProgress = useCallback((postId: string, progress: number) => {
     setJobPosts(prevPosts =>
       prevPosts.map(p => (p.id === postId ? { ...p, progress } : p))
     );
   }, []);
 
-  const takeJob = useCallback((postId: number) => {
+  const takeJob = useCallback((postId: string) => {
     if (!currentUser || currentUser.role !== Role.PROFESSIONAL) return;
     setJobPosts(prevPosts =>
       prevPosts.map(p =>
@@ -67,7 +110,7 @@ const App: React.FC = () => {
     );
   }, [currentUser]);
   
-  const handleProfessionalCompletion = useCallback((postId: number, rating: number, feedback: string) => {
+  const handleProfessionalCompletion = useCallback((postId: string, rating: number, feedback: string) => {
     setJobPosts(prev => prev.map(p => p.id === postId ? { 
         ...p, 
         status: JobStatus.AWAITING_CLIENT_VALIDATION, 
@@ -77,7 +120,7 @@ const App: React.FC = () => {
     } : p));
   }, []);
 
-  const handleClientCompletion = useCallback((postId: number, rating: number, feedback: string) => {
+  const handleClientCompletion = useCallback((postId: string, rating: number, feedback: string) => {
       setJobPosts(prev => prev.map(p => p.id === postId ? { 
           ...p, 
           status: JobStatus.AWAITING_ADMIN_FINALIZATION,
@@ -86,7 +129,7 @@ const App: React.FC = () => {
       } : p));
   }, []);
 
-  const handleAdminFinalization = useCallback((postId: number) => {
+  const handleAdminFinalization = useCallback((postId: string) => {
       setJobPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.COMPLETED } : p));
   }, []);
   
@@ -97,8 +140,12 @@ const App: React.FC = () => {
     }
   }, [currentUser]);
 
-  const handleCancelJob = useCallback((postId: number) => {
+  const handleCancelJob = useCallback((postId: string) => {
     setJobPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.CANCELLED } : p));
+  }, []);
+  
+  const handleUpdateHeroImages = useCallback((images: string[]) => {
+    setHeroImages(images);
   }, []);
 
 
@@ -122,6 +169,8 @@ const App: React.FC = () => {
                   onApprove={(id) => updateJobStatus(id, JobStatus.ACTIVE)} 
                   onReject={(id) => updateJobStatus(id, JobStatus.REJECTED)}
                   onFinalize={handleAdminFinalization}
+                  heroImages={heroImages}
+                  onUpdateHeroImages={handleUpdateHeroImages}
                 />;
       case Role.CLIENT:
         return <ClientDashboard 
@@ -147,10 +196,19 @@ const App: React.FC = () => {
         return <p>No hay un panel disponible para este rol.</p>;
     }
   };
+  
+  if (isLoadingAuth) {
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900">
+            <BriefcaseIcon className="h-16 w-16 text-indigo-500 animate-pulse" />
+            <p className="text-slate-600 dark:text-slate-300 mt-4">Cargando aplicación...</p>
+        </div>
+    );
+  }
 
   if (!currentUser) {
     if (view === 'login') {
-      return <LoginScreen onLogin={handleLogin} onBackToHome={navigateToHome} />;
+      return <AuthScreen onRegister={handleRegisterUser} onBackToHome={navigateToHome} />;
     }
     const activeJobs = filteredPosts.filter(p => p.status === JobStatus.ACTIVE);
     const completedJobs = jobPosts.filter(p => p.status === JobStatus.COMPLETED && p.professionalRating && p.professionalFeedback);
@@ -168,6 +226,7 @@ const App: React.FC = () => {
             completedJobs={completedJobs}
             users={users}
             onNavigateToLogin={navigateToLogin}
+            heroImages={heroImages}
           />
        </div>
     );

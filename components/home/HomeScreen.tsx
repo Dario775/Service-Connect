@@ -9,21 +9,55 @@ interface HomeScreenProps {
   completedJobs: JobPost[];
   users: User[];
   onNavigateToLogin: () => void;
+  heroImages: string[];
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, users, onNavigateToLogin }) => {
+const generateKeyframes = (numImages: number): string => {
+  if (numImages <= 0) return '';
+  const singleSlideDurationPercent = 100 / numImages;
+  const fadeInOutPercent = singleSlideDurationPercent * 0.1; // 10% of slide time for fade
+
+  return `
+      @keyframes fade {
+          0% { opacity: 0; }
+          ${fadeInOutPercent}% { opacity: 1; }
+          ${singleSlideDurationPercent - fadeInOutPercent}% { opacity: 1; }
+          ${singleSlideDurationPercent}% { opacity: 0; }
+          100% { opacity: 0; }
+      }
+  `;
+};
+
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, users, onNavigateToLogin, heroImages }) => {
 
   const handleScrollToJobs = () => {
     document.getElementById('available-jobs')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const animationKeyframes = generateKeyframes(heroImages.length);
+  const slideDurationSeconds = 6;
+  const totalDuration = heroImages.length * slideDurationSeconds;
+
   return (
     <div>
+      <style>{animationKeyframes}</style>
       {/* Hero Section with Animated Background */}
       <section className="hero-section">
-        <div className="slide slide1"></div>
-        <div className="slide slide2"></div>
-        <div className="slide slide3"></div>
+        {heroImages.map((imageUrl, index) => {
+          const delay = index * slideDurationSeconds;
+          return (
+            <div
+              key={index}
+              className="slide"
+              style={{
+                backgroundImage: `url('${imageUrl}')`,
+                animationDuration: `${totalDuration}s, ${totalDuration}s`,
+                animationDelay: `${delay}s, ${delay}s`,
+              }}
+            ></div>
+          );
+        })}
         <div className="hero-content max-w-7xl mx-auto py-24 sm:py-32 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl">
             Encuentra ayuda. Ofrece tu talento. Soluciona.

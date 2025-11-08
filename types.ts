@@ -26,7 +26,7 @@ export enum ServiceCategory {
 }
 
 export interface User {
-  id: number;
+  id: string; // Changed to string to accommodate Firebase UID
   name: string;
   role: Role;
   phone?: string;
@@ -35,16 +35,17 @@ export interface User {
   longitude?: number;
   photo?: string;
   specialties?: ServiceCategory[];
+  email?: string; // Added email for authentication
 }
 
 export interface JobPost {
-  id: number;
+  id: string; // Changed to string for consistency
   title: string;
   description: string;
   category: ServiceCategory;
   status: JobStatus;
-  clientId: number;
-  professionalId?: number;
+  clientId: string; // Changed to string
+  professionalId?: string; // Changed to string
   createdAt: Date;
   progress?: number;
   professionalRating?: number;
