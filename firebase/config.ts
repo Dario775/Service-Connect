@@ -1,24 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
-// TODO: Reemplaza la siguiente configuración con la de tu proyecto de Firebase.
-// Puedes encontrar esta información en la consola de Firebase, en la configuración de tu proyecto.
+// Configuración del proyecto de Firebase.
+// Esta información se encuentra en la consola de Firebase, en la configuración de tu proyecto.
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyD7EpX7zOaAYKIdbcJqbL8CRCfFCVyK4_4",
+  authDomain: "magnetron-d409f.firebaseapp.com",
+  projectId: "magnetron-d409f",
+  storageBucket: "magnetron-d409f.firebasestorage.app",
+  messagingSenderId: "566418328805",
+  appId: "1:566418328805:web:d8778170c4392fe501580c"
 };
-
-// Validación de la configuración de Firebase
-if (firebaseConfig.apiKey === "TU_API_KEY" || firebaseConfig.authDomain === "TU_AUTH_DOMAIN") {
-  // Este error detendrá la ejecución y será visible en la consola del navegador.
-  // Es una medida deliberada para asegurar que la configuración sea reemplazada.
-  throw new Error("La configuración de Firebase no es válida. Por favor, reemplaza los valores de marcador de posición en 'src/firebase/config.ts' con tus propias credenciales de proyecto de Firebase para continuar.");
-}
-
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);

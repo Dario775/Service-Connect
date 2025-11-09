@@ -56,10 +56,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister, onBackToHome }) => 
          case 'auth/invalid-credential':
            errorMessage = 'Las credenciales proporcionadas no son válidas o han caducado.';
            break;
+        case 'auth/configuration-not-found':
+           errorMessage = 'Error de configuración de Firebase. Asegúrate de que el método de inicio de sesión "Correo/Contraseña" esté habilitado en la consola de Firebase.';
+           break;
         default:
-          // This will catch generic errors like network failures or config issues.
-          // The most likely issue is the Firebase config is not set up.
-          errorMessage = 'Error de conexión o configuración. Por favor, verifica tu conexión a internet y asegúrate de que la configuración de Firebase en `firebase/config.ts` sea correcta y no contenga valores de marcador de posición.';
+          errorMessage = 'Ocurrió un error inesperado. Por favor, verifica tu conexión a internet e inténtalo de nuevo.';
           break;
       }
       setError(errorMessage);

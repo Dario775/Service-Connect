@@ -15,7 +15,18 @@ type View = 'home' | 'login' | 'dashboard';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+  
+  // Initialize users state from localStorage or fallback to initial constants
+  const [users, setUsers] = useState<User[]>(() => {
+    try {
+      const storedUsers = localStorage.getItem('service-connect-users');
+      return storedUsers ? JSON.parse(storedUsers) : INITIAL_USERS;
+    } catch (error) {
+      console.error("Error al cargar usuarios desde localStorage:", error);
+      return INITIAL_USERS;
+    }
+  });
+
   const [jobPosts, setJobPosts] = useState<JobPost[]>(INITIAL_JOB_POSTS);
   const [view, setView] = useState<View>('home');
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,24 +37,38 @@ const App: React.FC = () => {
     'https://images.unsplash.com/photo-1545239351-ef35f43d514b?q=80&w=1974&auto=format&fit=crop'
   ]);
 
+  // Persist users to localStorage whenever they change
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    try {
+      localStorage.setItem('service-connect-users', JSON.stringify(users));
+    } catch (error) {
+      console.error("Error al guardar usuarios en localStorage:", error);
+    }
+  }, [users]);
+
+  useEffect(() => {
+    const processAuthChange = (firebaseUser: FirebaseUser | null) => {
+      setIsLoadingAuth(true);
       if (firebaseUser) {
-        // User is signed in.
         const userProfile = users.find(u => u.id === firebaseUser.uid);
         if (userProfile) {
           setCurrentUser(userProfile);
           setView('dashboard');
         }
-        // If user profile doesn't exist, they will be created via the registration flow.
-        // This handles session persistence.
+        // If user is authenticated but profile isn't found yet (e.g., during registration race condition),
+        // do nothing. The effect will re-run when the `users` state updates, which will find the profile.
       } else {
-        // User is signed out.
         setCurrentUser(null);
         setView('home');
       }
       setIsLoadingAuth(false);
-    });
+    };
+
+    // Check auth state once when component mounts or `users` array changes
+    processAuthChange(auth.currentUser);
+
+    // Subscribe to future auth state changes
+    const unsubscribe = onAuthStateChanged(auth, processAuthChange);
 
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, [users]);
@@ -51,9 +76,8 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     signOut(auth).then(() => {
-        setCurrentUser(null);
+        // onAuthStateChanged will handle resetting the state
         setSearchQuery('');
-        setView('home');
     }).catch((error) => {
         console.error("Error al cerrar sesión:", error);
     });
@@ -74,9 +98,9 @@ const App: React.FC = () => {
       email: firebaseUser.email || '',
       role: role,
     };
-    setUsers(prev => [...prev, newUser]);
-    setCurrentUser(newUser);
-    setView('dashboard');
+    // This state update will trigger the auth useEffect to re-run,
+    // which will then find the user profile and set the correct view.
+    setUsers(prev => [...prev.filter(u => u.email !== newUser.email), newUser]);
   };
 
   const addJobPost = useCallback((newPostData: Omit<JobPost, 'id' | 'status' | 'createdAt'>) => {
@@ -206,10 +230,11 @@ const App: React.FC = () => {
     );
   }
 
-  if (!currentUser) {
-    if (view === 'login') {
+  if (view === 'login') {
       return <AuthScreen onRegister={handleRegisterUser} onBackToHome={navigateToHome} />;
-    }
+  }
+  
+  if (view === 'home' || !currentUser) {
     const activeJobs = filteredPosts.filter(p => p.status === JobStatus.ACTIVE);
     const completedJobs = jobPosts.filter(p => p.status === JobStatus.COMPLETED && p.professionalRating && p.professionalFeedback);
     return (
@@ -231,6 +256,7 @@ const App: React.FC = () => {
        </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
