@@ -25,6 +25,13 @@ export enum ServiceCategory {
   OTHER = 'Otro'
 }
 
+export enum JobPriority {
+  NORMAL = 'Normal',
+  URGENT = 'Urgente',
+  SCHEDULED = 'Programado'
+}
+
+
 export interface User {
   id: string; // Changed to string to accommodate Firebase UID
   name: string;
@@ -47,6 +54,8 @@ export interface JobPost {
   clientId: string; // Changed to string
   professionalId?: string; // Changed to string
   createdAt: Date;
+  priority: JobPriority;
+  dueDate?: Date;
   progress?: number;
   professionalRating?: number;
   professionalFeedback?: string;

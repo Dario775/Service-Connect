@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { JobPost, JobStatus, User, ServiceCategory, ChatMessage } from '../../types';
 import JobPostCard from '../jobs/JobPostCard';
 import JobProgressUpdater from '../jobs/JobProgressUpdater';
@@ -19,6 +19,38 @@ interface ProfessionalDashboardProps {
   onUpdateUser: (user: User) => void;
   onSendMessage: (jobId: string, text: string) => void;
 }
+
+declare const L: any;
+
+const MapView: React.FC<{ latitude: number, longitude: number }> = ({ latitude, longitude }) => {
+    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const mapRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (mapContainerRef.current && !mapRef.current) {
+            delete (L.Icon.Default.prototype as any)._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            });
+            
+            mapRef.current = L.map(mapContainerRef.current, { zoomControl: false, scrollWheelZoom: false, dragging: false }).setView([latitude, longitude], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapRef.current);
+            L.marker([latitude, longitude]).addTo(mapRef.current);
+        }
+
+        return () => {
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
+        };
+    }, [latitude, longitude]);
+    
+    return <div ref={mapContainerRef} className="h-48 w-full rounded-md" />;
+};
+
 
 const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371; // Radius of the Earth in km
@@ -312,6 +344,12 @@ const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUs
                   <LocationMarkerIcon className="h-5 w-5 mr-3 text-slate-400 mt-1 flex-shrink-0" />
                   <p className="text-slate-800 dark:text-white">{currentUser.address || 'Dirección no especificada'}</p>
                 </div>
+                 {currentUser.latitude && currentUser.longitude && (
+                    <div>
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 mb-2">Mi Área de Operación</h3>
+                        <MapView latitude={currentUser.latitude} longitude={currentUser.longitude} />
+                    </div>
+                  )}
                  <div>
                   <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Especialidades</h3>
                   <div className="mt-2 flex flex-wrap gap-2">

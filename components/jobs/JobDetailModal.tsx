@@ -1,5 +1,5 @@
 import React from 'react';
-import { JobPost, User, ChatMessage, Role } from '../../types';
+import { JobPost, User, ChatMessage, Role, JobPriority } from '../../types';
 import { XIcon, UserCircleIcon, BriefcaseIcon } from '../icons/IconComponents';
 import ChatInterface from '../chat/ChatInterface';
 
@@ -68,6 +68,13 @@ const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, currentUser, users
                      <div>
                         <h4 className="font-semibold text-slate-600 dark:text-slate-400">Descripción</h4>
                         <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{job.description}</p>
+                    </div>
+                     <div>
+                        <h4 className="font-semibold text-slate-600 dark:text-slate-400">Prioridad</h4>
+                        <p className="text-slate-800 dark:text-slate-200">
+                            {job.priority}
+                            {job.priority === JobPriority.SCHEDULED && job.dueDate && ` - Para el ${new Date(job.dueDate).toLocaleDateString()}`}
+                        </p>
                     </div>
                     {client && (
                         <div>

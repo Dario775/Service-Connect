@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 // FIX: Use Firebase v9 compat import with default import syntax.
 import firebase from 'firebase/compat/app';
 import { auth } from './firebase/config';
-import { User, Role, JobPost, JobStatus, ChatMessage } from './types';
+import { User, Role, JobPost, JobStatus, ChatMessage, JobPriority } from './types';
 import { INITIAL_USERS, INITIAL_JOB_POSTS, INITIAL_MESSAGES } from './constants';
 import Navbar from './components/layout/Navbar';
 import AuthScreen from './components/auth/AuthScreen';
@@ -224,9 +224,12 @@ const App: React.FC = () => {
         if (Array.isArray(parsed)) {
           return parsed.map((p: any) => {
             const createdAt = new Date(p.createdAt);
+            const dueDate = p.dueDate ? new Date(p.dueDate) : undefined;
             return {
               ...p,
               createdAt: isNaN(createdAt.getTime()) ? new Date() : createdAt,
+              dueDate: dueDate && !isNaN(dueDate.getTime()) ? dueDate : undefined,
+              priority: p.priority || JobPriority.NORMAL,
             };
           });
         }
@@ -489,10 +492,24 @@ const App: React.FC = () => {
   // Job Post Actions
   const addJobPost = useCallback((newPostData: Omit<JobPost, 'id' | 'status' | 'createdAt'>) => {
     const newPost: JobPost = {
-      ...newPostData,
       id: `job-${Date.now()}`,
       status: JobStatus.PENDING,
       createdAt: new Date(),
+      title: newPostData.title,
+      description: newPostData.description,
+      category: newPostData.category,
+      clientId: newPostData.clientId,
+      photo: newPostData.photo,
+      latitude: newPostData.latitude,
+      longitude: newPostData.longitude,
+      priority: newPostData.priority,
+      dueDate: newPostData.dueDate,
+      professionalId: undefined,
+      progress: undefined,
+      professionalRating: undefined,
+      professionalFeedback: undefined,
+      clientRating: undefined,
+      clientFeedback: undefined,
     };
     setPosts(prev => [newPost, ...prev]);
   }, []);

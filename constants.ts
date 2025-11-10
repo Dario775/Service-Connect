@@ -1,4 +1,4 @@
-import { User, JobPost, Role, JobStatus, ServiceCategory, ChatMessage } from './types';
+import { User, JobPost, Role, JobStatus, ServiceCategory, ChatMessage, JobPriority } from './types';
 
 // NOTA: Estos usuarios son solo para datos de ejemplo. El inicio de sesión ahora se gestiona a través de Firebase Authentication.
 export const INITIAL_USERS: User[] = [
@@ -18,6 +18,7 @@ export const INITIAL_JOB_POSTS: JobPost[] = [
     status: JobStatus.PENDING,
     clientId: 'client-01',
     createdAt: new Date('2023-10-26T10:00:00Z'),
+    priority: JobPriority.URGENT,
     photo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
     latitude: 19.435,
     longitude: -99.140,
@@ -30,6 +31,7 @@ export const INITIAL_JOB_POSTS: JobPost[] = [
     status: JobStatus.ACTIVE,
     clientId: 'client-02',
     createdAt: new Date('2023-10-25T14:30:00Z'),
+    priority: JobPriority.NORMAL,
     latitude: 19.395,
     longitude: -99.170,
   },
@@ -42,6 +44,7 @@ export const INITIAL_JOB_POSTS: JobPost[] = [
     clientId: 'client-01',
     professionalId: 'prof-01',
     createdAt: new Date('2023-10-24T09:00:00Z'),
+    priority: JobPriority.NORMAL,
     progress: 25,
     latitude: 19.436,
     longitude: -99.141,
@@ -55,6 +58,8 @@ export const INITIAL_JOB_POSTS: JobPost[] = [
     clientId: 'client-02',
     professionalId: 'prof-02',
     createdAt: new Date('2023-10-22T11:00:00Z'),
+    priority: JobPriority.SCHEDULED,
+    dueDate: new Date('2023-10-30T17:00:00Z'),
     professionalRating: 5,
     professionalFeedback: "¡Un trabajo excelente! Diana fue muy profesional y solucionó el problema rápidamente.",
     clientRating: 4,

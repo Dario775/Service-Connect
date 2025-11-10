@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { JobPost, User, JobStatus, ChatMessage } from '../../types';
 import CreateJobPostForm from '../jobs/CreateJobPostForm';
 import JobPostCard from '../jobs/JobPostCard';
@@ -17,6 +17,38 @@ interface ClientDashboardProps {
   onCancelJob: (postId: string) => void;
   onSendMessage: (jobId: string, text: string) => void;
 }
+
+declare const L: any;
+
+const MapView: React.FC<{ latitude: number, longitude: number }> = ({ latitude, longitude }) => {
+    const mapContainerRef = useRef<HTMLDivElement>(null);
+    const mapRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (mapContainerRef.current && !mapRef.current) {
+            delete (L.Icon.Default.prototype as any)._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            });
+            
+            mapRef.current = L.map(mapContainerRef.current, { zoomControl: false, scrollWheelZoom: false, dragging: false }).setView([latitude, longitude], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapRef.current);
+            L.marker([latitude, longitude]).addTo(mapRef.current);
+        }
+
+        return () => {
+            if (mapRef.current) {
+                mapRef.current.remove();
+                mapRef.current = null;
+            }
+        };
+    }, [latitude, longitude]);
+    
+    return <div ref={mapContainerRef} className="h-48 w-full rounded-md" />;
+};
+
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, users, messages, addJobPost, onClientComplete, onUpdateUser, onCancelJob, onSendMessage }) => {
   const myPosts = posts.filter(p => p.clientId === currentUser.id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -187,6 +219,12 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, u
                       <LocationMarkerIcon className="h-5 w-5 mr-3 text-slate-400 mt-1 flex-shrink-0" />
                       <p className="text-slate-800 dark:text-white">{currentUser.address || 'Dirección no especificada'}</p>
                   </div>
+                  {currentUser.latitude && currentUser.longitude && (
+                    <div>
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-2 mb-2">Ubicación Registrada</h3>
+                        <MapView latitude={currentUser.latitude} longitude={currentUser.longitude} />
+                    </div>
+                  )}
               </div>
             )}
           </div>

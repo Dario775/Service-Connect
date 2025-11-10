@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { JobPost, ServiceCategory } from '../../types';
+import { JobPost, ServiceCategory, JobPriority } from '../../types';
 import { SERVICE_CATEGORIES } from '../../constants';
 import { generateJobDescription } from '../../services/geminiService';
 import { SparklesIcon, CameraIcon, PhotographIcon, XIcon, LocationMarkerIcon } from '../icons/IconComponents';
@@ -14,6 +14,8 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<ServiceCategory>(ServiceCategory.OTHER);
+  const [priority, setPriority] = useState<JobPriority>(JobPriority.NORMAL);
+  const [dueDate, setDueDate] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -71,6 +73,8 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
     setTitle('');
     setDescription('');
     setCategory(ServiceCategory.OTHER);
+    setPriority(JobPriority.NORMAL);
+    setDueDate('');
     setPhoto(null);
     setLocation(null);
     setLocationStatus('');
@@ -82,11 +86,17 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
       alert('Por favor, completa todos los campos.');
       return;
     }
+    if (priority === JobPriority.SCHEDULED && !dueDate) {
+      alert('Por favor, selecciona una fecha para el trabajo programado.');
+      return;
+    }
     onSubmit({
       title,
       description,
       category,
       clientId,
+      priority,
+      dueDate: priority === JobPriority.SCHEDULED ? new Date(`${dueDate}T00:00:00`) : undefined,
       photo: photo || undefined,
       latitude: location?.lat,
       longitude: location?.lon
@@ -144,6 +154,34 @@ const CreateJobPostForm: React.FC<CreateJobPostFormProps> = ({ clientId, onSubmi
             />
           </div>
           
+          {/* Priority Section */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Prioridad</label>
+            <div className="mt-2 grid grid-cols-3 gap-3">
+              {Object.values(JobPriority).map((p) => (
+                <label key={p} className={`relative flex items-center justify-center p-3 rounded-md cursor-pointer border transition-all ${priority === p ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-500' : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'}`}>
+                  <input type="radio" name="priority" value={p} checked={priority === p} onChange={() => setPriority(p)} className="sr-only" />
+                  <span className={`text-sm font-medium ${priority === p ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-800 dark:text-slate-200'}`}>{p}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          {priority === JobPriority.SCHEDULED && (
+            <div className="animate-fade-in">
+              <label htmlFor="dueDate" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Fecha Límite</label>
+              <input
+                type="date"
+                id="dueDate"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-800 dark:text-slate-200"
+                required
+              />
+            </div>
+          )}
+
           {/* Location Section */}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Ubicación del Trabajo (Opcional)</label>
