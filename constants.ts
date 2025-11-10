@@ -1,4 +1,4 @@
-import { User, JobPost, Role, JobStatus, ServiceCategory } from './types';
+import { User, JobPost, Role, JobStatus, ServiceCategory, ChatMessage } from './types';
 
 // NOTA: Estos usuarios son solo para datos de ejemplo. El inicio de sesión ahora se gestiona a través de Firebase Authentication.
 export const INITIAL_USERS: User[] = [
@@ -62,6 +62,23 @@ export const INITIAL_JOB_POSTS: JobPost[] = [
     latitude: 19.394,
     longitude: -99.171,
   },
+];
+
+export const INITIAL_MESSAGES: ChatMessage[] = [
+    {
+        id: 'msg-1',
+        jobId: 'job-3', // The IN_PROGRESS job
+        senderId: 'prof-01', // Carlos
+        text: 'Hola Alicia, he revisado tu laptop. Parece ser un problema de software y algo de polvo en los ventiladores. Debería tenerlo listo para mañana.',
+        timestamp: new Date(new Date('2023-10-24T10:00:00Z')),
+    },
+    {
+        id: 'msg-2',
+        jobId: 'job-3',
+        senderId: 'client-01', // Alicia
+        text: '¡Genial! Muchas gracias por la rápida actualización, Carlos. ¿A qué hora crees que podrías pasar?',
+        timestamp: new Date(new Date('2023-10-24T10:05:00Z')),
+    }
 ];
 
 export const SERVICE_CATEGORIES: ServiceCategory[] = Object.values(ServiceCategory);

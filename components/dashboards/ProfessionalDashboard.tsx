@@ -1,20 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { JobPost, JobStatus, User, ServiceCategory } from '../../types';
+import { JobPost, JobStatus, User, ServiceCategory, ChatMessage } from '../../types';
 import JobPostCard from '../jobs/JobPostCard';
 import JobProgressUpdater from '../jobs/JobProgressUpdater';
 import RatingModal from '../jobs/RatingModal';
 import CameraModal from '../jobs/CameraModal';
-import { UserCircleIcon, PhotographIcon, CameraIcon, XIcon, LocationMarkerIcon, PencilAltIcon, PhoneIcon } from '../icons/IconComponents';
+import { UserCircleIcon, PhotographIcon, CameraIcon, XIcon, LocationMarkerIcon, PencilAltIcon, PhoneIcon, ChatAltIcon } from '../icons/IconComponents';
 import { SERVICE_CATEGORIES } from '../../constants';
+import JobDetailModal from '../jobs/JobDetailModal';
 
 interface ProfessionalDashboardProps {
   currentUser: User;
   posts: JobPost[];
   users: User[];
+  messages: ChatMessage[];
   onTakeJob: (postId: string) => void;
   onUpdateProgress: (postId: string, progress: number) => void;
   onProfessionalComplete: (postId: string, rating: number, feedback: string) => void;
   onUpdateUser: (user: User) => void;
+  onSendMessage: (jobId: string, text: string) => void;
 }
 
 const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -29,8 +32,9 @@ const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c; // Distance in km
 };
 
-const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUser, posts, users, onTakeJob, onUpdateProgress, onProfessionalComplete, onUpdateUser }) => {
+const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUser, posts, users, messages, onTakeJob, onUpdateProgress, onProfessionalComplete, onUpdateUser, onSendMessage }) => {
   const [ratingPost, setRatingPost] = useState<JobPost | null>(null);
+  const [selectedJob, setSelectedJob] = useState<JobPost | null>(null);
   const [searchRadius, setSearchRadius] = useState(50); // Default 50km
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [profileData, setProfileData] = useState<User>(currentUser);
@@ -195,6 +199,16 @@ const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUs
         onClose={() => setIsCameraOpen(false)}
         onCapture={handlePhotoCapture}
       />
+       {selectedJob && (
+          <JobDetailModal
+            job={selectedJob}
+            currentUser={currentUser}
+            users={users}
+            allMessages={messages}
+            onSendMessage={onSendMessage}
+            onClose={() => setSelectedJob(null)}
+          />
+      )}
       <div className="space-y-8">
          <div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Panel de Profesional</h1>
@@ -322,22 +336,31 @@ const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUs
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Mis Trabajos ({myJobs.length})</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {myJobs.map(post => (
-                      <JobPostCard key={post.id} post={post} users={users} hideProgressBar>
-                        {post.status === JobStatus.IN_PROGRESS && (
-                          <div className="space-y-4">
-                            <JobProgressUpdater
-                              postId={post.id}
-                              currentProgress={post.progress || 0}
-                              onUpdate={onUpdateProgress}
-                            />
-                             <button
-                                onClick={() => handleOpenRatingModal(post)}
-                                className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                              >
-                                Marcar como Terminado
-                              </button>
-                          </div>
-                        )}
+                      <JobPostCard key={post.id} post={post} users={users} currentUser={currentUser} hideProgressBar>
+                        <div className="space-y-2">
+                            <button
+                                onClick={() => setSelectedJob(post)}
+                                className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 dark:border-slate-500 shadow-sm text-sm font-medium rounded-md text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600"
+                            >
+                                <ChatAltIcon className="h-5 w-5 mr-2" />
+                                Ver Detalles y Chatear
+                            </button>
+                            {post.status === JobStatus.IN_PROGRESS && (
+                              <div className="space-y-4 pt-2">
+                                <JobProgressUpdater
+                                  postId={post.id}
+                                  currentProgress={post.progress || 0}
+                                  onUpdate={onUpdateProgress}
+                                />
+                                 <button
+                                    onClick={() => handleOpenRatingModal(post)}
+                                    className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                  >
+                                    Marcar como Terminado
+                                  </button>
+                              </div>
+                            )}
+                        </div>
                       </JobPostCard>
                     ))}
                 </div>
@@ -372,7 +395,7 @@ const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUs
           {availableJobs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availableJobs.map(post => (
-                <JobPostCard key={post.id} post={post} users={users} distance={post.distance}>
+                <JobPostCard key={post.id} post={post} users={users} currentUser={currentUser} distance={post.distance}>
                   <button
                     onClick={() => onTakeJob(post.id)}
                     className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

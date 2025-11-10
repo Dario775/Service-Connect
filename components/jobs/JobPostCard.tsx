@@ -6,6 +6,7 @@ import PhotoViewerModal from './PhotoViewerModal';
 interface JobPostCardProps {
   post: JobPost;
   users: User[];
+  currentUser?: User | null;
   children?: React.ReactNode;
   hideProgressBar?: boolean;
   distance?: number;
@@ -108,10 +109,10 @@ const JobPostCard: React.FC<JobPostCardProps> = ({ post, users, children, hidePr
                            {post.professionalFeedback && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 italic">"{post.professionalFeedback}"</p>}
                        </div>
                    )}
-                   {post.clientRating && (
+                   {client?.name && post.clientRating && (
                         <div>
                            <div className="flex justify-between items-center">
-                              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Del Profesional a {client?.name.split(' ')[0]}</span>
+                              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Del Profesional a {client.name.split(' ')[0]}</span>
                               <RatingDisplay rating={post.clientRating} />
                            </div>
                            {post.clientFeedback && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 italic">"{post.clientFeedback}"</p>}

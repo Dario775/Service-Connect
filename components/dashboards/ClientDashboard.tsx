@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import { JobPost, User, JobStatus } from '../../types';
+import { JobPost, User, JobStatus, ChatMessage } from '../../types';
 import CreateJobPostForm from '../jobs/CreateJobPostForm';
 import JobPostCard from '../jobs/JobPostCard';
 import RatingModal from '../jobs/RatingModal';
-import { UserCircleIcon, PhoneIcon, LocationMarkerIcon, PencilAltIcon } from '../icons/IconComponents';
+import { UserCircleIcon, PhoneIcon, LocationMarkerIcon, PencilAltIcon, ChatAltIcon } from '../icons/IconComponents';
+import JobDetailModal from '../jobs/JobDetailModal';
 
 interface ClientDashboardProps {
   currentUser: User;
   posts: JobPost[];
   users: User[];
+  messages: ChatMessage[];
   addJobPost: (newPost: Omit<JobPost, 'id' | 'status' | 'createdAt'>) => void;
   onClientComplete: (postId: string, rating: number, feedback: string) => void;
   onUpdateUser: (user: User) => void;
   onCancelJob: (postId: string) => void;
+  onSendMessage: (jobId: string, text: string) => void;
 }
 
-const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, users, addJobPost, onClientComplete, onUpdateUser, onCancelJob }) => {
+const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, users, messages, addJobPost, onClientComplete, onUpdateUser, onCancelJob, onSendMessage }) => {
   const myPosts = posts.filter(p => p.clientId === currentUser.id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   const [ratingPost, setRatingPost] = useState<JobPost | null>(null);
+  const [selectedJob, setSelectedJob] = useState<JobPost | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<User>(currentUser);
@@ -115,6 +119,16 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, u
           userNameToRate="el Profesional"
         />
       )}
+      {selectedJob && (
+          <JobDetailModal
+            job={selectedJob}
+            currentUser={currentUser}
+            users={users}
+            allMessages={messages}
+            onSendMessage={onSendMessage}
+            onClose={() => setSelectedJob(null)}
+          />
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
           <div className="p-6 bg-white dark:bg-slate-800 rounded-lg shadow-md">
@@ -182,26 +196,41 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({ currentUser, posts, u
           <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Mis Solicitudes de Servicio</h2>
           {myPosts.length > 0 ? (
             <div className="space-y-6">
-              {myPosts.map(post => (
-                <JobPostCard key={post.id} post={post} users={users}>
-                   {post.status === JobStatus.AWAITING_CLIENT_VALIDATION && (
-                     <button
-                        onClick={() => handleOpenRatingModal(post)}
-                        className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                      >
-                        Confirmar y Calificar
-                      </button>
-                  )}
-                  {(post.status === JobStatus.PENDING || (post.status === JobStatus.ACTIVE && !post.professionalId)) && (
-                     <button
-                        onClick={() => onCancelJob(post.id)}
-                        className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                      >
-                        Cancelar Solicitud
-                      </button>
-                  )}
-                </JobPostCard>
-              ))}
+              {myPosts.map(post => {
+                  const hasChat = [JobStatus.IN_PROGRESS, JobStatus.AWAITING_CLIENT_VALIDATION].includes(post.status) && post.professionalId;
+
+                  return (
+                    <JobPostCard key={post.id} post={post} users={users} currentUser={currentUser}>
+                      <div className="space-y-2">
+                          {hasChat && (
+                              <button
+                                  onClick={() => setSelectedJob(post)}
+                                  className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 dark:border-slate-500 shadow-sm text-sm font-medium rounded-md text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600"
+                              >
+                                  <ChatAltIcon className="h-5 w-5 mr-2" />
+                                  Ver Detalles y Chatear
+                              </button>
+                          )}
+                           {post.status === JobStatus.AWAITING_CLIENT_VALIDATION && (
+                             <button
+                                onClick={() => handleOpenRatingModal(post)}
+                                className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                              >
+                                Confirmar y Calificar
+                              </button>
+                          )}
+                          {(post.status === JobStatus.PENDING || (post.status === JobStatus.ACTIVE && !post.professionalId)) && (
+                             <button
+                                onClick={() => onCancelJob(post.id)}
+                                className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                              >
+                                Cancelar Solicitud
+                              </button>
+                          )}
+                      </div>
+                    </JobPostCard>
+                  )
+              })}
             </div>
           ) : (
             <div className="text-center bg-white dark:bg-slate-800 p-12 rounded-lg shadow-md">

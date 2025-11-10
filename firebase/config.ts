@@ -1,5 +1,8 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+
+
+// FIX: Use Firebase v9 compat imports for v8 syntax with default import.
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
 
 // Configuración del proyecto de Firebase.
 // Esta información se encuentra en la consola de Firebase, en la configuración de tu proyecto.
@@ -13,7 +16,12 @@ const firebaseConfig = {
 };
 
 // Inicializa Firebase
-const app = initializeApp(firebaseConfig);
+// FIX: Use Firebase v8 compatible initialization and check if it's already initialized.
+// FIX: Use optional chaining to prevent crash if firebase.apps is undefined.
+if (!firebase.apps?.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 // Exporta los servicios que necesites
-export const auth = getAuth(app);
+// FIX: Use Firebase v8 compatible auth export
+export const auth = firebase.auth();

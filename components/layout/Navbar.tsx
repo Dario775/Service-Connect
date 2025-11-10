@@ -7,6 +7,8 @@ interface NavbarProps {
   currentUser: User | null;
   onLogout: () => void;
   onNavigateToLogin?: () => void;
+  onNavigateToHome: () => void;
+  onNavigateToDashboard: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -20,15 +22,15 @@ const RoleIcon: React.FC<{ role: string, className: string }> = ({ role, classNa
   }
 };
 
-const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout, onNavigateToLogin, searchQuery, onSearchChange }) => {
+const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout, onNavigateToLogin, onNavigateToHome, onNavigateToDashboard, searchQuery, onSearchChange }) => {
   return (
     <nav className="bg-white dark:bg-slate-800 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="/" className="flex items-center cursor-pointer flex-shrink-0">
+          <button onClick={onNavigateToHome} className="flex items-center cursor-pointer flex-shrink-0">
             <BriefcaseIcon className="h-8 w-8 text-indigo-500" />
             <span className="ml-2 text-2xl font-bold text-slate-800 dark:text-white">Service Connect</span>
-          </a>
+          </button>
           
           <div className="flex-1 flex justify-center px-4 sm:px-6 lg:px-8">
             <div className="w-full max-w-md relative">
@@ -51,9 +53,15 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser, onLogout, onNavigateToLogi
             <div className="flex items-center space-x-4">
                <div className="flex items-center">
                  <RoleIcon role={currentUser.role} className="h-6 w-6 text-slate-500 dark:text-slate-300" />
-                 <span className="ml-2 text-slate-700 dark:text-slate-200 font-medium whitespace-nowrap">{currentUser.name}</span>
-                 <span className="ml-2 text-xs font-semibold uppercase px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">{currentUser.role}</span>
+                 <span className="ml-2 text-slate-700 dark:text-slate-200 font-medium whitespace-nowrap hidden sm:inline">{currentUser.name}</span>
+                 <span className="ml-2 text-xs font-semibold uppercase px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 hidden md:inline">{currentUser.role}</span>
               </div>
+              <button
+                onClick={onNavigateToDashboard}
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:text-indigo-200 dark:bg-indigo-900/50 dark:hover:bg-indigo-900"
+              >
+                Mi Panel
+              </button>
               <button onClick={onLogout} className="flex items-center p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <LogoutIcon className="h-6 w-6" />
                 <span className="sr-only">Cerrar sesión</span>

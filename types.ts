@@ -56,3 +56,11 @@ export interface JobPost {
   latitude?: number;
   longitude?: number;
 }
+
+export interface ChatMessage {
+  id: string;
+  jobId: string;
+  senderId: string;
+  text: string;
+  timestamp: Date;
+}

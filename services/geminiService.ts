@@ -3,15 +3,16 @@ import { GoogleGenAI } from "@google/genai";
 import { ServiceCategory } from '../types';
 
 const API_KEY = process.env.API_KEY;
+let ai: GoogleGenAI | null = null;
 
-if (!API_KEY) {
+if (API_KEY) {
+  ai = new GoogleGenAI({ apiKey: API_KEY });
+} else {
   console.warn("La variable de entorno API_KEY no está configurada. Las funciones de Gemini no funcionarán.");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
-
 export const generateJobDescription = async (title: string, category: ServiceCategory): Promise<string> => {
-  if (!API_KEY) {
+  if (!ai) {
     return "La clave de API no está configurada. Por favor, establece la variable de entorno API_KEY.";
   }
   
