@@ -4,7 +4,7 @@ import JobPostCard from '../jobs/JobPostCard';
 import JobProgressUpdater from '../jobs/JobProgressUpdater';
 import RatingModal from '../jobs/RatingModal';
 import CameraModal from '../jobs/CameraModal';
-import { UserCircleIcon, PhotographIcon, CameraIcon, XIcon, LocationMarkerIcon, PencilAltIcon, PhoneIcon, ChatAltIcon } from '../icons/IconComponents';
+import { UserCircleIcon, PhotographIcon, CameraIcon, XIcon, LocationMarkerIcon, PencilAltIcon, PhoneIcon, ChatAltIcon, CheckBadgeIcon } from '../icons/IconComponents';
 import { SERVICE_CATEGORIES } from '../../constants';
 import JobDetailModal from '../jobs/JobDetailModal';
 
@@ -334,7 +334,10 @@ const ProfessionalDashboard: React.FC<ProfessionalDashboardProps> = ({ currentUs
               <div className="md:col-span-2 space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Nombre Completo</h3>
-                  <p className="mt-1 text-slate-800 dark:text-white font-semibold text-lg">{currentUser.name}</p>
+                   <div className="flex items-center gap-2">
+                      <p className="mt-1 text-slate-800 dark:text-white font-semibold text-lg">{currentUser.name}</p>
+                      {currentUser.isVerified && <CheckBadgeIcon className="h-6 w-6 text-blue-500" title="Perfil Verificado" />}
+                   </div>
                 </div>
                 <div className="flex items-center">
                   <PhoneIcon className="h-5 w-5 mr-3 text-slate-400" />

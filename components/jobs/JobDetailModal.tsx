@@ -1,6 +1,6 @@
 import React from 'react';
 import { JobPost, User, ChatMessage, Role, JobPriority } from '../../types';
-import { XIcon, UserCircleIcon, BriefcaseIcon } from '../icons/IconComponents';
+import { XIcon, UserCircleIcon, BriefcaseIcon, CheckBadgeIcon } from '../icons/IconComponents';
 import ChatInterface from '../chat/ChatInterface';
 
 interface JobDetailModalProps {
@@ -89,6 +89,7 @@ const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, currentUser, users
                                     <div className="flex items-center gap-2">
                                         <RoleIcon role={otherUser.role} className="h-5 w-5 text-indigo-500"/>
                                         <span className="font-medium text-slate-800 dark:text-slate-200">{otherUser.name}</span>
+                                        {otherUser.isVerified && otherUser.role === Role.PROFESSIONAL && <CheckBadgeIcon className="h-5 w-5 text-blue-500" title="Profesional Verificado" />}
                                         <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200">Profesional</span>
                                     </div>
                                 )}

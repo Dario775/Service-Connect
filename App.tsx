@@ -384,8 +384,8 @@ const App: React.FC = () => {
           setCurrentUser(userProfile);
         }
         
-        if (screen === 'auth' || screen === 'home') {
-          console.log('✅ Redirigiendo a dashboard:', userProfile.role);
+        if (screen === 'auth') {
+          console.log('✅ Redirigiendo a dashboard desde auth:', userProfile.role);
           setScreen('dashboard');
         }
       } else {
@@ -537,6 +537,20 @@ const App: React.FC = () => {
   const approveJob = useCallback((postId: string) => setPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.ACTIVE } : p)), []);
   const rejectJob = useCallback((postId: string) => setPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.REJECTED } : p)), []);
   const finalizeJob = useCallback((postId: string) => setPosts(prev => prev.map(p => p.id === postId ? { ...p, status: JobStatus.COMPLETED } : p)), []);
+  const toggleUserVerification = useCallback((userId: string) => {
+    setUsers(prev => prev.map(u => 
+        u.id === userId && u.role === Role.PROFESSIONAL 
+        ? { ...u, isVerified: !u.isVerified } 
+        : u
+    ));
+  }, []);
+  const deleteUser = useCallback((userId: string) => {
+      if (window.confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción es permanente y eliminará todas sus publicaciones y chats asociados.')) {
+          setUsers(prev => prev.filter(u => u.id !== userId));
+          setPosts(prev => prev.filter(p => p.clientId !== userId && p.professionalId !== userId));
+          setMessages(prev => prev.filter(m => m.senderId !== userId));
+      }
+  }, []);
 
   // Professional Actions
   const takeJob = useCallback((postId: string) => {
@@ -580,14 +594,25 @@ const App: React.FC = () => {
     
     switch (currentUser.role) {
       case Role.ADMIN:
-        return <AdminDashboard posts={filteredPosts} users={users} onApprove={approveJob} onReject={rejectJob} onFinalize={finalizeJob} heroImages={heroImages} onUpdateHeroImages={setHeroImages} />;
+        return <AdminDashboard 
+                  currentUser={currentUser}
+                  posts={filteredPosts} 
+                  users={users} 
+                  onApprove={approveJob} 
+                  onReject={rejectJob} 
+                  onFinalize={finalizeJob} 
+                  heroImages={heroImages} 
+                  onUpdateHeroImages={setHeroImages} 
+                  onToggleUserVerification={toggleUserVerification}
+                  onDeleteUser={deleteUser}
+                />;
       case Role.CLIENT:
         return <ClientDashboard currentUser={currentUser} posts={filteredPosts} users={users} messages={messages} addJobPost={addJobPost} onClientComplete={clientCompleteJob} onUpdateUser={updateUser} onCancelJob={cancelJob} onSendMessage={addMessage} />;
       case Role.PROFESSIONAL:
         return <ProfessionalDashboard currentUser={currentUser} posts={filteredPosts} users={users} messages={messages} onTakeJob={takeJob} onUpdateProgress={updateProgress} onProfessionalComplete={professionalCompleteJob} onUpdateUser={updateUser} onSendMessage={addMessage} />;
       default:
         console.warn('⚠️ Rol de usuario desconocido:', currentUser.role);
-        return <HomeScreen activeJobs={activeJobs} completedJobs={completedJobsWithFeedback} users={users} onNavigateToLogin={navigateToLogin} heroImages={heroImages} />;
+        return <HomeScreen activeJobs={activeJobs} completedJobs={completedJobsWithFeedback} users={users} onNavigateToLogin={navigateToLogin} heroImages={heroImages} currentUser={currentUser} />;
     }
   };
 
@@ -611,7 +636,7 @@ const App: React.FC = () => {
       return <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">{renderDashboard()}</div>;
     }
     
-    return <HomeScreen activeJobs={activeJobs} completedJobs={completedJobsWithFeedback} users={users} onNavigateToLogin={navigateToLogin} heroImages={heroImages} />;
+    return <HomeScreen activeJobs={activeJobs} completedJobs={completedJobsWithFeedback} users={users} onNavigateToLogin={navigateToLogin} heroImages={heroImages} currentUser={currentUser} />;
   };
 
   return (

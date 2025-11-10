@@ -3,10 +3,10 @@ import { User, JobPost, Role, JobStatus, ServiceCategory, ChatMessage, JobPriori
 // NOTA: Estos usuarios son solo para datos de ejemplo. El inicio de sesión ahora se gestiona a través de Firebase Authentication.
 export const INITIAL_USERS: User[] = [
   { id: 'admin-01', name: 'Usuario Administrador', role: Role.ADMIN, email: 'admin@example.com' },
-  { id: 'client-01', name: 'Alicia Cliente', role: Role.CLIENT, phone: '555-123-4567', address: 'Calle Falsa 123, Springfield', email: 'alicia@example.com' },
-  { id: 'client-02', name: 'Roberto Cliente', role: Role.CLIENT, phone: '555-987-6543', address: 'Avenida Siempreviva 742, Shelbyville', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto=format&fit=crop', email: 'roberto@example.com' },
-  { id: 'prof-01', name: 'Carlos Profesional', role: Role.PROFESSIONAL, latitude: 19.4326, longitude: -99.1332, phone: '555-111-2222', address: 'Plaza de la Constitución, Zócalo', specialties: [ServiceCategory.TECH_SUPPORT, ServiceCategory.ELECTRICAL], email: 'carlos@example.com' },
-  { id: 'prof-02', name: 'Diana Profesional', role: Role.PROFESSIONAL, latitude: 19.4014, longitude: -99.1661, phone: '555-333-4444', address: 'Av. de los Insurgentes Sur, Condesa', specialties: [ServiceCategory.REFRIGERATION, ServiceCategory.PLUMBING], photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1887&auto=format&fit=crop', email: 'diana@example.com' },
+  { id: 'client-01', name: 'Alicia Cliente', role: Role.CLIENT, phone: '555-123-4567', address: 'Calle Falsa 123, Springfield', email: 'alicia@example.com', isVerified: false },
+  { id: 'client-02', name: 'Roberto Cliente', role: Role.CLIENT, phone: '555-987-6543', address: 'Avenida Siempreviva 742, Shelbyville', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto=format&fit=crop', email: 'roberto@example.com', isVerified: false },
+  { id: 'prof-01', name: 'Carlos Profesional', role: Role.PROFESSIONAL, latitude: 19.4326, longitude: -99.1332, phone: '555-111-2222', address: 'Plaza de la Constitución, Zócalo', specialties: [ServiceCategory.TECH_SUPPORT, ServiceCategory.ELECTRICAL], email: 'carlos@example.com', isVerified: true },
+  { id: 'prof-02', name: 'Diana Profesional', role: Role.PROFESSIONAL, latitude: 19.4014, longitude: -99.1661, phone: '555-333-4444', address: 'Av. de los Insurgentes Sur, Condesa', specialties: [ServiceCategory.REFRIGERATION, ServiceCategory.PLUMBING], photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1887&auto=format&fit=crop', email: 'diana@example.com', isVerified: false },
 ];
 
 export const INITIAL_JOB_POSTS: JobPost[] = [

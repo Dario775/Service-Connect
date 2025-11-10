@@ -1,6 +1,6 @@
 import React from 'react';
 import { JobPost, User } from '../../types';
-import { StarIcon, UserCircleIcon } from '../icons/IconComponents';
+import { StarIcon, UserCircleIcon, CheckBadgeIcon } from '../icons/IconComponents';
 
 interface TestimonialCardProps {
   post: JobPost;
@@ -54,8 +54,9 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ post, users }) => {
               "{post.clientFeedback || 'Sin comentarios.'}"
             </blockquote>
           </div>
-          <footer className="font-semibold text-slate-800 dark:text-white mt-3 text-sm">
-            - {professional?.name}
+          <footer className="font-semibold text-slate-800 dark:text-white mt-3 text-sm flex items-center justify-center gap-2">
+            <span>- {professional?.name}</span>
+            {professional?.isVerified && <CheckBadgeIcon className="h-5 w-5 text-blue-500" title="Profesional Verificado" />}
           </footer>
         </div>
       </div>

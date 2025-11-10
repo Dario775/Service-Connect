@@ -10,6 +10,7 @@ interface HomeScreenProps {
   users: User[];
   onNavigateToLogin: () => void;
   heroImages: string[];
+  currentUser?: User | null;
 }
 
 const generateKeyframes = (numImages: number): string => {
@@ -29,7 +30,7 @@ const generateKeyframes = (numImages: number): string => {
 };
 
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, users, onNavigateToLogin, heroImages }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, users, onNavigateToLogin, heroImages, currentUser }) => {
 
   const handleScrollToJobs = () => {
     document.getElementById('available-jobs')?.scrollIntoView({ behavior: 'smooth' });
@@ -129,7 +130,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ activeJobs, completedJobs, user
           {activeJobs.length > 0 ? (
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {activeJobs.map(job => (
-                <JobPostCard key={job.id} post={job} users={users} />
+                <JobPostCard key={job.id} post={job} users={users} currentUser={currentUser} onLoginClick={onNavigateToLogin} />
               ))}
             </div>
           ) : (

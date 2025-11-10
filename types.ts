@@ -43,6 +43,7 @@ export interface User {
   photo?: string;
   specialties?: ServiceCategory[];
   email?: string; // Added email for authentication
+  isVerified?: boolean;
 }
 
 export interface JobPost {

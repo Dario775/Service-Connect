@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { JobPost, JobStatus, ServiceCategory, User } from '../../types';
+import { JobPost, JobStatus, ServiceCategory, User, Role } from '../../types';
 import JobPostCard from '../jobs/JobPostCard';
 import { SERVICE_CATEGORIES } from '../../constants';
-import { PhotographIcon, XIcon, PencilAltIcon } from '../icons/IconComponents';
+import { PhotographIcon, XIcon, PencilAltIcon, CheckBadgeIcon, TrashIcon, SearchIcon, UserCircleIcon } from '../icons/IconComponents';
 
 
 interface AdminDashboardProps {
+  currentUser: User;
   posts: JobPost[];
   users: User[];
   onApprove: (postId: string) => void;
@@ -13,6 +14,8 @@ interface AdminDashboardProps {
   onFinalize: (postId: string) => void;
   heroImages: string[];
   onUpdateHeroImages: (images: string[]) => void;
+  onToggleUserVerification: (userId: string) => void;
+  onDeleteUser: (userId: string) => void;
 }
 
 const HeroImageManager: React.FC<{
@@ -112,7 +115,110 @@ const HeroImageManager: React.FC<{
   )
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ posts, users, onApprove, onReject, onFinalize, heroImages, onUpdateHeroImages }) => {
+const UserManager: React.FC<{
+  users: User[];
+  onToggleVerification: (userId: string) => void;
+  onDeleteUser: (userId: string) => void;
+  currentAdminId: string;
+}> = ({ users, onToggleVerification, onDeleteUser, currentAdminId }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
+
+  const filteredUsers = users
+    .filter(u => u.id !== currentAdminId)
+    .filter(u => roleFilter === 'all' || u.role === roleFilter)
+    .filter(u => 
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white shrink-0">
+          Gestionar Usuarios ({filteredUsers.length})
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <SearchIcon className="h-5 w-5 text-slate-400" />
+              </div>
+            <input
+              type="search"
+              placeholder="Buscar por nombre o email..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full block pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
+          <select
+            value={roleFilter}
+            onChange={e => setRoleFilter(e.target.value as 'all' | Role)}
+            className="w-full sm:w-auto block pl-3 pr-10 py-2 text-base bg-slate-50 dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md text-slate-800 dark:text-slate-200"
+          >
+            <option value="all">Todos los Roles</option>
+            <option value={Role.CLIENT}>Clientes</option>
+            <option value={Role.PROFESSIONAL}>Profesionales</option>
+          </select>
+        </div>
+      </div>
+      
+      {filteredUsers.length > 0 ? (
+        <ul role="list" className="divide-y divide-slate-200 dark:divide-slate-700">
+          {filteredUsers.map(user => (
+            <li key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4">
+              <div className="flex items-center gap-x-4">
+                {user.photo ? (
+                  <img className="h-10 w-10 flex-none rounded-full bg-slate-50 object-cover" src={user.photo} alt="" />
+                ) : (
+                  <UserCircleIcon className="h-10 w-10 flex-none text-slate-400" />
+                )}
+                <div className="min-w-0 flex-auto">
+                  <p className="text-sm font-semibold leading-6 text-slate-900 dark:text-white flex items-center gap-x-2">
+                    {user.name}
+                    {user.isVerified && <CheckBadgeIcon className="h-5 w-5 text-blue-500" title="Profesional Verificado" />}
+                  </p>
+                  <p className="mt-1 truncate text-xs leading-5 text-slate-500 dark:text-slate-400">{user.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-x-6 w-full sm:w-auto">
+                 <div className="hidden sm:block">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{user.role}</p>
+                </div>
+                <div className="flex items-center gap-x-2 flex-1 sm:flex-initial justify-end">
+                    {user.role === Role.PROFESSIONAL && (
+                    <button
+                        onClick={() => onToggleVerification(user.id)}
+                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm ${
+                        user.isVerified
+                            ? 'text-yellow-800 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-200 dark:hover:bg-yellow-900'
+                            : 'text-green-800 bg-green-100 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-200 dark:hover:bg-green-900'
+                        }`}
+                    >
+                       {user.isVerified ? 'Quitar Verificación' : 'Verificar'}
+                    </button>
+                    )}
+                    <button
+                        onClick={() => onDeleteUser(user.id)}
+                        className="p-2 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
+                        title="Eliminar usuario"
+                    >
+                        <TrashIcon className="h-5 w-5" />
+                    </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-center text-slate-500 dark:text-slate-400 py-8">No se encontraron usuarios que coincidan con la búsqueda.</p>
+      )}
+    </div>
+  );
+};
+
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, posts, users, onApprove, onReject, onFinalize, heroImages, onUpdateHeroImages, onToggleUserVerification, onDeleteUser }) => {
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<ServiceCategory | 'all'>('all');
 
@@ -126,15 +232,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ posts, users, onApprove
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Panel de Administrador</h1>
-        <p className="text-slate-600 dark:text-slate-300 mt-1">Filtra, revisa y modera todas las solicitudes de servicio.</p>
+        <p className="text-slate-600 dark:text-slate-300 mt-1">Modera solicitudes, gestiona usuarios y configura la página de inicio.</p>
       </div>
+
+      <UserManager 
+        users={users}
+        currentAdminId={currentUser.id}
+        onToggleVerification={onToggleUserVerification}
+        onDeleteUser={onDeleteUser}
+      />
 
       <HeroImageManager images={heroImages} onUpdate={onUpdateHeroImages} />
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white shrink-0">
-                Solicitudes ({filteredPosts.length})
+                Solicitudes de Servicio ({filteredPosts.length})
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <div>

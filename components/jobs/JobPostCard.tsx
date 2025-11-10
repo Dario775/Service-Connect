@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { JobPost, JobStatus, User, JobPriority } from '../../types';
-import { StarIcon, LocationMarkerIcon, FireIcon, CalendarIcon, MapIcon, XIcon } from '../icons/IconComponents';
+import { JobPost, JobStatus, User, JobPriority, Role } from '../../types';
+import { StarIcon, LocationMarkerIcon, FireIcon, CalendarIcon, MapIcon, XIcon, CheckBadgeIcon } from '../icons/IconComponents';
 import PhotoViewerModal from './PhotoViewerModal';
 
 interface JobPostCardProps {
@@ -10,6 +10,7 @@ interface JobPostCardProps {
   children?: React.ReactNode;
   hideProgressBar?: boolean;
   distance?: number;
+  onLoginClick?: () => void;
 }
 
 declare const L: any;
@@ -117,11 +118,18 @@ const PriorityDisplay: React.FC<{ priority: JobPriority, dueDate?: Date }> = ({ 
 };
 
 
-const JobPostCard: React.FC<JobPostCardProps> = ({ post, users, children, hideProgressBar = false, distance }) => {
+const JobPostCard: React.FC<JobPostCardProps> = ({ post, users, children, hideProgressBar = false, distance, currentUser, onLoginClick }) => {
   const client = users.find(u => u.id === post.clientId);
   const professional = users.find(u => u.id === post.professionalId);
   const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
+  // Reglas de visibilidad:
+  // - Un profesional puede ver todo.
+  // - Un cliente solo puede ver los detalles completos de SU PROPIO post.
+  const canViewDetails = !!currentUser && (currentUser.role === Role.PROFESSIONAL || currentUser.id === post.clientId);
+  const isClientViewingOthersPost = !!currentUser && currentUser.role === Role.CLIENT && currentUser.id !== post.clientId;
+
 
   return (
     <>
@@ -176,8 +184,15 @@ const JobPostCard: React.FC<JobPostCardProps> = ({ post, users, children, hidePr
               
               {post.latitude && post.longitude && (
                   <button
-                      onClick={() => setIsMapModalOpen(true)}
-                      className="flex items-center font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                      onClick={() => {
+                        if (canViewDetails) {
+                          setIsMapModalOpen(true);
+                        } else if (!currentUser && onLoginClick) {
+                          onLoginClick();
+                        }
+                      }}
+                      disabled={isClientViewingOthersPost}
+                      className="flex items-center font-medium text-indigo-600 dark:text-indigo-400 hover:underline disabled:text-slate-500 dark:disabled:text-slate-400 disabled:cursor-not-allowed disabled:no-underline"
                   >
                       <MapIcon className="h-4 w-4 mr-1" />
                       Ver Mapa
@@ -231,12 +246,32 @@ const JobPostCard: React.FC<JobPostCardProps> = ({ post, users, children, hidePr
 
           <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-600 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex justify-between items-center">
-              <div>
-                <p>Publicado por: <span className="font-semibold">{client?.name || 'Desconocido'}</span></p>
-                {professional && (
-                  <p>Asignado a: <span className="font-semibold">{professional.name}</span></p>
+              <div className="space-y-1">
+                {canViewDetails ? (
+                  <p>Publicado por: <span className="font-semibold">{client?.name || 'Desconocido'}</span></p>
+                ) : (
+                  isClientViewingOthersPost ? (
+                    <button disabled className="text-sm font-semibold text-slate-500 dark:text-slate-400 cursor-not-allowed">
+                      Información solo para Profesionales
+                    </button>
+                  ) : (
+                    <button onClick={onLoginClick} className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none">
+                      Inicia sesión para ver al cliente
+                    </button>
+                  )
                 )}
-                <p>Publicado el: <span className="font-semibold">{post.createdAt.toLocaleDateString()}</span></p>
+                
+                {professional && (
+                  <div className="flex items-center space-x-1.5">
+                    <p>Asignado a: <span className="font-semibold">{professional.name}</span></p>
+                    {professional.isVerified && (
+                        <div title="Profesional Verificado">
+                            <CheckBadgeIcon className="h-4 w-4 text-blue-500" />
+                        </div>
+                    )}
+                  </div>
+                )}
+                <p>Publicado el: <span className="font-semibold">{new Date(post.createdAt).toLocaleDateString()}</span></p>
               </div>
             </div>
           </div>
